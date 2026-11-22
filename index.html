@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Barber Lounge - Management System</title>
+    <meta name="description" content="Professional Barber Shop Management System built with HTML, CSS, JavaScript and Supabase">
+
+    <!-- Supabase JS Client CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/print.css">
+</head>
+<body>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <div class="app-container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="app-sidebar">
+            <div class="sidebar-header">
+                <div class="brand-wrapper">
+                    <div class="brand-icon">✂️</div>
+                    <div class="brand-text">
+                        <h1 id="app-brand-title">Elite Barber</h1>
+                        <span>Management System</span>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-label">Main Menu</div>
+                <a href="#dashboard" class="nav-link active" data-navigate="dashboard">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#appointments" class="nav-link" data-navigate="appointments">
+                    <span class="nav-icon">📅</span>
+                    <span>Appointments</span>
+                </a>
+                <a href="#customers" class="nav-link" data-navigate="customers">
+                    <span class="nav-icon">👥</span>
+                    <span>Customers</span>
+                </a>
+                <a href="#services" class="nav-link" data-navigate="services">
+                    <span class="nav-icon">💈</span>
+                    <span>Services</span>
+                </a>
+
+                <div class="nav-section-label mt-2">Finance & Analytics</div>
+                <a href="#payments" class="nav-link" data-navigate="payments">
+                    <span class="nav-icon">💳</span>
+                    <span>Payments & Billing</span>
+                </a>
+                <a href="#reports" class="nav-link" data-navigate="reports">
+                    <span class="nav-icon">📈</span>
+                    <span>Reports</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="status-badge" id="supabase-status-badge" title="Click to view Supabase Connection Settings" onclick="window.app.openSettingsModal()">
+                    <span class="status-dot dot-demo" id="supabase-status-dot"></span>
+                    <span id="supabase-status-text" class="text-truncate">Connecting...</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN WRAPPER -->
+        <div class="main-wrapper">
+            <!-- TOP HEADER -->
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="menu-toggle-btn" id="btn-sidebar-toggle" aria-label="Toggle Navigation">
+                        ☰
+                    </button>
+                    <div class="d-none d-md-block">
+                        <span class="badge badge-accent">Salon Pro Suite</span>
+                    </div>
+                </div>
+
+                <div class="header-actions">
+                    <button class="btn btn-primary btn-sm" onclick="window.appointmentsController.openBookModal()">
+                        + Book Appointment
+                    </button>
+                    <button class="btn btn-icon" id="btn-open-settings" title="System Settings & Database">
+                        ⚙️
+                    </button>
+                </div>
+            </header>
+
+            <!-- CONTENT VIEWS -->
+            <main class="content-area">
+
+                <!-- 1. DASHBOARD VIEW -->
+                <section id="view-dashboard" class="view-section">
+                    <div class="view-header">
+                        <div class="view-title-group">
+                            <h2>Dashboard Overview</h2>
+                            <p class="view-subtitle">Today's appointments, daily revenue, and barbershop performance</p>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-secondary btn-sm" onclick="window.customersController.openAddModal()">
+                                + Add Customer
+                            </button>
+                            <button class="btn btn-primary btn-sm" onclick="window.appointmentsController.openBookModal()">
+                                + New Appointment
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- KPI Grid -->
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-icon-box kpi-icon-gold">📅</div>
+                            <div class="kpi-info">
+                                <div class="kpi-label">Today's Bookings</div>
+                                <div class="kpi-value" id="kpi-today-appts">0</div>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon-box kpi-icon-green">💰</div>
+                            <div class="kpi-info">
+                                <div class="kpi-label">Today's Revenue</div>
+                                <div class="kpi-value text-success" id="kpi-today-revenue">Rs. 0</div>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon-box kpi-icon-blue">👥</div>
+                            <div class="kpi-info">
+                                <div class="kpi-label">Total Customers</div>
+                                <div class="kpi-value" id="kpi-total-customers">0</div>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon-box kpi-icon-purple">✂️</div>
+                            <div class="kpi-info">
+                                <div class="kpi-label">Completed Today</div>
+                                <div class="kpi-value" id="kpi-completed-today">0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Left: Today's Appointments -->
+                        <div class="col-12 col-lg-8">
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h3 class="card-title">Today's Appointments</h3>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="window.app.navigate('appointments')">
+                                        View All &rarr;
+                                    </button>
+                                </div>
+                                <div class="card-body p-0" id="dashboard-today-appointments">
+                                    <div class="p-4 text-center text-muted">Loading appointments...</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Analytics & Recent Payments -->
+                        <div class="col-12 col-lg-4">
+                            <!-- Revenue Trend Chart -->
+                            <div id="dashboard-chart-container" class="mb-3"></div>
+
+                            <!-- Recent Payments -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Recent Payments</h3>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="window.app.navigate('payments')">
+                                        All &rarr;
+                                    </button>
+                                </div>
+                                <div class="card-body p-0" id="dashboard-recent-payments">
+                                    <div class="p-3 text-center text-muted">Loading transactions...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. APPOINTMENTS VIEW -->
+                <section id="view-appointments" class="view-section d-none">
+                    <div class="view-header">
+                        <div class="view-title-group">
+                            <h2>Appointments & Bookings</h2>
+                            <p class="view-subtitle">Manage client bookings, timings, stylists, and statuses</p>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge badge-accent" id="appointments-count-badge">0 Appointments</span>
+                            <button class="btn btn-primary btn-sm" onclick="window.appointmentsController.openBookModal()">
+                                + Book Appointment
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Filter Toolbar -->
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="row g-2 align-items-center">
+                                <div class="col-12 col-md-4">
+                                    <div class="search-bar-wrapper w-100">
+                                        <span class="search-icon">🔍</span>
+                                        <input type="text" id="appt-search-input" class="form-control" placeholder="Search customer, phone, or service...">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <div class="d-flex gap-2">
+                                        <input type="date" id="appt-filter-date" class="form-control">
+                                        <div class="btn-group" id="appt-quick-date-btns">
+                                            <button class="btn btn-secondary btn-sm" data-range="today">Today</button>
+                                            <button class="btn btn-secondary btn-sm" data-range="tomorrow">Tmrw</button>
+                                            <button class="btn btn-secondary btn-sm active" data-range="all">All</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <select id="appt-filter-status" class="form-select">
+                                        <option value="all">All Statuses</option>
+                                        <option value="pending">Pending</option>
+                                        <option value="confirmed">Confirmed</option>
+                                        <option value="completed">Completed</option>
+                                        <option value="cancelled">Cancelled</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="appointments-list">
+                        <div class="text-center p-5 text-muted">Loading appointments...</div>
+                    </div>
+                </section>
+
+                <!-- 3. CUSTOMERS VIEW -->
+                <section id="view-customers" class="view-section d-none">
+                    <div class="view-header">
+                        <div class="view-title-group">
+                            <h2>Customer Directory</h2>
+                            <p class="view-subtitle">Clients list, visit histories, loyalty, and contact details</p>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge badge-accent" id="customers-count-badge">0 Customers</span>
+                            <button class="btn btn-primary btn-sm" onclick="window.customersController.openAddModal()">
+                                + Add Customer
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Search Customer Bar -->
+                    <div class="mb-3">
+                        <div class="search-bar-wrapper">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" id="customer-search-input" class="form-control" placeholder="Search by name, phone, or email...">
+                        </div>
+                    </div>
+
+                    <div id="customers-list">
+                        <div class="text-center p-5 text-muted">Loading customers...</div>
+                    </div>
+                </section>
+
+                <!-- 4. SERVICES VIEW -->
+                <section id="view-services" class="view-section d-none">
+                    <div class="view-header">
+                        <div class="view-title-group">
+                            <h2>Services & Price Menu</h2>
+                            <p class="view-subtitle">Manage haircuts, grooming packages, pricing, and durations</p>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge badge-accent" id="services-count-badge">0 Services</span>
+                            <button class="btn btn-primary btn-sm" onclick="window.servicesController.openAddModal()">
+                                + Add Service
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Category Pills -->
+                    <div class="category-pills" id="services-category-filters">
+                        <button class="category-pill active" data-category="All">All Services</button>
+                        <button class="category-pill" data-category="Haircuts">Haircuts</button>
+                        <button class="category-pill" data-category="Beard & Shave">Beard & Shave</button>
+                        <button class="category-pill" data-category="Combos">Combos & Packages</button>
+                        <button class="category-pill" data-category="Facial & Spa">Facial & Spa</button>
+                        <button class="category-pill" data-category="Hair Color">Hair Color</button>
+                    </div>
+
+                    <!-- Search Services Bar -->
+                    <div class="mb-3">
+                        <div class="search-bar-wrapper">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" id="services-search-input" class="form-control" placeholder="Search services...">
+                        </div>
+                    </div>
+
+                    <div id="services-list">
+                        <div class="text-center p-5 text-muted">Loading services...</div>
+                    </div>
+                </section>
+
+                <!-- 5. PAYMENTS & BILLING VIEW -->
+                <section id="view-payments" class="view-section d-none">
+                    <div class="view-header">
+                        <div class="view-title-group">
+                            <h2>Payments & Billing</h2>
+                            <p class="view-subtitle">Track collections, invoices, payment methods, and receipts</p>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge badge-accent" id="payments-count-badge">0 Transactions</span>
+                            <button class="btn btn-primary btn-sm" onclick="window.paymentsController.openPaymentModal()">
+                                + Record Payment
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Payment Summary Mini KPIs -->
+                    <div class="kpi-grid mb-3">
+                        <div class="kpi-card">
+                            <div class="kpi-icon-box kpi-icon-green">💵</div>
+                            <div class="kpi-info">
+                                <div class="kpi-label">Total Collected</div>
+                                <div class="kpi-value text-success" id="payments-kpi-total">Rs. 0</div>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon-box kpi-icon-gold">🪙</div>
+                            <div class="kpi-info">
+                                <div class="kpi-label">Cash Payments</div>
+                                <div class="kpi-value" id="payments-kpi-cash">Rs. 0</div>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon-box kpi-icon-blue">💳</div>
+                            <div class="kpi-info">
+                                <div class="kpi-label">Card & Digital</div>
+                                <div class="kpi-value" id="payments-kpi-digital">Rs. 0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filter Toolbar -->
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="row g-2 align-items-center">
+                                <div class="col-12 col-md-4">
+                                    <div class="search-bar-wrapper w-100">
+                                        <span class="search-icon">🔍</span>
+                                        <input type="text" id="payment-search-input" class="form-control" placeholder="Search invoice number or customer...">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <select id="payment-filter-method" class="form-select">
+                                        <option value="all">All Payment Methods</option>
+                                        <option value="Cash">Cash</option>
+                                        <option value="Card">Card</option>
+                                        <option value="EasyPaisa">EasyPaisa</option>
+                                        <option value="JazzCash">JazzCash</option>
+                                        <option value="Online">Online Transfer</option>
+                                    </select>
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <select id="payment-filter-status" class="form-select">
+                                        <option value="all">All Statuses</option>
+                                        <option value="Completed">Completed</option>
+                                        <option value="Pending">Pending</option>
+                                        <option value="Refunded">Refunded</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="payments-list">
+                        <div class="text-center p-5 text-muted">Loading transactions...</div>
+                    </div>
+                </section>
+
+                <!-- 6. REPORTS VIEW -->
+                <section id="view-reports" class="view-section d-none">
+                    <div class="view-header">
+                        <div class="view-title-group">
+                            <h2>Business Reports & Analytics</h2>
+                            <p class="view-subtitle" id="report-active-range-label">Performance metrics and data breakdown</p>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-secondary btn-sm" id="btn-print-report">
+                                🖨️ Print Report
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Range Selector Toolbar -->
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                                <div class="btn-group" id="report-range-btns">
+                                    <button class="btn btn-secondary btn-sm" data-range="today">Today</button>
+                                    <button class="btn btn-secondary btn-sm" data-range="last-7">Last 7 Days</button>
+                                    <button class="btn btn-secondary btn-sm active" data-range="this-month">This Month</button>
+                                    <button class="btn btn-secondary btn-sm" data-range="all">All Time</button>
+                                    <button class="btn btn-secondary btn-sm" data-range="custom">Custom Range</button>
+                                </div>
+
+                                <div id="report-custom-dates" class="d-flex align-items-center gap-2 d-none">
+                                    <input type="date" id="report-start-date" class="form-control form-control-sm">
+                                    <span>to</span>
+                                    <input type="date" id="report-end-date" class="form-control form-control-sm">
+                                    <button class="btn btn-primary btn-sm" id="btn-apply-report-custom">Apply</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analytics Summary KPIs -->
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-icon-box kpi-icon-green">💰</div>
+                            <div class="kpi-info">
+                                <div class="kpi-label">Range Revenue</div>
+                                <div class="kpi-value text-success" id="report-kpi-revenue">Rs. 0</div>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon-box kpi-icon-gold">📅</div>
+                            <div class="kpi-info">
+                                <div class="kpi-label">Appointments</div>
+                                <div class="kpi-value" id="report-kpi-appts">0</div>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon-box kpi-icon-blue">✓</div>
+                            <div class="kpi-info">
+                                <div class="kpi-label">Completed Services</div>
+                                <div class="kpi-value" id="report-kpi-completed">0</div>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon-box kpi-icon-purple">📊</div>
+                            <div class="kpi-info">
+                                <div class="kpi-label">Average Ticket Size</div>
+                                <div class="kpi-value" id="report-kpi-avg-ticket">Rs. 0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Revenue by Service Breakdown -->
+                        <div class="col-12 col-lg-6">
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h3 class="card-title">Top Services by Revenue</h3>
+                                </div>
+                                <div class="card-body" id="report-service-breakdown">
+                                    <div class="text-center p-3 text-muted">Calculating...</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Methods Breakdown & Top Clients -->
+                        <div class="col-12 col-lg-6">
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h3 class="card-title">Payment Method Share</h3>
+                                </div>
+                                <div class="card-body" id="report-methods-breakdown">
+                                    <div class="text-center p-3 text-muted">Calculating...</div>
+                                </div>
+                            </div>
+
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h3 class="card-title">Top Spending Clients</h3>
+                                </div>
+                                <div class="card-body p-0" id="report-top-customers">
+                                    <div class="text-center p-3 text-muted">Calculating...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CSV Export Tools -->
+                    <div class="card mt-2">
+                        <div class="card-header">
+                            <h3 class="card-title">Export Data (Excel / CSV)</h3>
+                        </div>
+                        <div class="card-body d-flex flex-wrap gap-2">
+                            <button class="btn btn-secondary" id="btn-export-appointments-csv">
+                                📥 Export Appointments (.CSV)
+                            </button>
+                            <button class="btn btn-secondary" id="btn-export-payments-csv">
+                                📥 Export Payments & Sales (.CSV)
+                            </button>
+                            <button class="btn btn-secondary" id="btn-export-customers-csv">
+                                📥 Export Customers List (.CSV)
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- ====================================================================
+         MODALS
+         ==================================================================== -->
+
+    <!-- CUSTOMER MODAL (Add / Edit) -->
+    <div class="modal-container" id="customer-modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 class="modal-title" id="customer-modal-title">Add New Customer</h3>
+                <button class="modal-close" onclick="UI.closeModal('customer-modal')">&times;</button>
+            </div>
+            <form id="customer-form">
+                <div class="modal-body">
+                    <input type="hidden" id="customer-modal-id">
+                    <div class="form-group">
+                        <label class="form-label" for="customer-name">Full Name *</label>
+                        <input type="text" id="customer-name" class="form-control" placeholder="e.g. Usman Tariq" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="customer-phone">Phone Number *</label>
+                        <input type="tel" id="customer-phone" class="form-control" placeholder="e.g. +92 321 1234567" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="customer-email">Email Address</label>
+                        <input type="email" id="customer-email" class="form-control" placeholder="e.g. usman@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="customer-notes">Notes / Style Preferences</label>
+                        <textarea id="customer-notes" class="form-control" placeholder="Hair preferences, skin sensitivity, notes..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="UI.closeModal('customer-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Customer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- CUSTOMER HISTORY MODAL -->
+    <div class="modal-container" id="customer-history-modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-dialog modal-dialog-lg">
+            <div class="modal-header">
+                <h3 class="modal-title">Customer History & Profile</h3>
+                <button class="modal-close" onclick="UI.closeModal('customer-history-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                    <div>
+                        <h4 id="cust-history-name" class="fw-bold m-0 text-accent">Customer Name</h4>
+                        <div id="cust-history-phone" class="text-muted">Phone Number</div>
+                    </div>
+                    <div class="text-end">
+                        <span class="text-muted-small d-block">Total Spent</span>
+                        <h3 id="cust-history-total-spent" class="text-success m-0 fw-bold">Rs. 0</h3>
+                        <small><span id="cust-history-visits">0</span> total visits</small>
+                    </div>
+                </div>
+                <h5 class="mb-2">Appointment History</h5>
+                <div id="cust-history-appointments-list">
+                    <p class="text-muted">Loading...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="UI.closeModal('customer-history-modal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SERVICE MODAL (Add / Edit) -->
+    <div class="modal-container" id="service-modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 class="modal-title" id="service-modal-title">Add New Service</h3>
+                <button class="modal-close" onclick="UI.closeModal('service-modal')">&times;</button>
+            </div>
+            <form id="service-form">
+                <div class="modal-body">
+                    <input type="hidden" id="service-modal-id">
+                    <div class="form-group">
+                        <label class="form-label" for="service-name">Service Name *</label>
+                        <input type="text" id="service-name" class="form-control" placeholder="e.g. Classic Fade Haircut" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-12 col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="service-category">Category *</label>
+                                <select id="service-category" class="form-select" required>
+                                    <option value="Haircuts">Haircuts</option>
+                                    <option value="Beard & Shave">Beard & Shave</option>
+                                    <option value="Combos">Combos & Packages</option>
+                                    <option value="Facial & Spa">Facial & Spa</option>
+                                    <option value="Hair Color">Hair Color</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="service-duration">Duration (Minutes) *</label>
+                                <input type="number" id="service-duration" class="form-control" min="5" max="300" step="5" value="30" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="service-price">Price (Rs.) *</label>
+                        <input type="number" id="service-price" class="form-control" min="0" step="any" placeholder="800" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="service-description">Description</label>
+                        <textarea id="service-description" class="form-control" placeholder="Details about this haircut or treatment..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-check">
+                            <input type="checkbox" id="service-is-active" class="form-check-input" checked>
+                            <span>Active (Available for booking)</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="UI.closeModal('service-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Service</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- APPOINTMENT MODAL (Book / Edit) -->
+    <div class="modal-container" id="appointment-modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 class="modal-title" id="appointment-modal-title">Book Appointment</h3>
+                <button class="modal-close" onclick="UI.closeModal('appointment-modal')">&times;</button>
+            </div>
+            <form id="appointment-form">
+                <div class="modal-body">
+                    <input type="hidden" id="appointment-modal-id">
+
+                    <div class="form-group">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label class="form-label m-0" for="appt-customer-select">Customer *</label>
+                            <a href="javascript:void(0)" onclick="window.customersController.openAddModal()" class="text-muted-small text-accent">+ New Customer</a>
+                        </div>
+                        <select id="appt-customer-select" class="form-select" required>
+                            <option value="">-- Select Customer --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="appt-service-select">Service *</label>
+                        <select id="appt-service-select" class="form-select" required>
+                            <option value="">-- Select Service --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="appt-barber-select">Barber / Stylist</label>
+                        <select id="appt-barber-select" class="form-select">
+                            <option value="">-- Any Available Barber --</option>
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12 col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="appt-date">Date *</label>
+                                <input type="date" id="appt-date" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="appt-time">Time Slot *</label>
+                                <input type="time" id="appt-time" class="form-control" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12 col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="appt-price">Total Price (Rs.)</label>
+                                <input type="number" id="appt-price" class="form-control" min="0" step="any" required>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="appt-status">Status</label>
+                                <select id="appt-status" class="form-select">
+                                    <option value="confirmed">Confirmed</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="cancelled">Cancelled</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="appt-notes">Special Notes</label>
+                        <textarea id="appt-notes" class="form-control" placeholder="Any specific styling instructions or requests..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="UI.closeModal('appointment-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Appointment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- PAYMENT MODAL -->
+    <div class="modal-container" id="payment-modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 class="modal-title" id="payment-modal-title">Record Payment</h3>
+                <button class="modal-close" onclick="UI.closeModal('payment-modal')">&times;</button>
+            </div>
+            <form id="payment-form">
+                <div class="modal-body">
+                    <input type="hidden" id="payment-modal-id">
+
+                    <div class="form-group">
+                        <label class="form-label" for="payment-invoice-num">Invoice Number</label>
+                        <input type="text" id="payment-invoice-num" class="form-control fw-mono" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="payment-customer-select">Customer *</label>
+                        <select id="payment-customer-select" class="form-select" required>
+                            <option value="">-- Select Customer --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="payment-appointment-select">Linked Appointment (Optional)</label>
+                        <select id="payment-appointment-select" class="form-select">
+                            <option value="">-- No Linked Appointment (Walk-in) --</option>
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12 col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="payment-amount">Amount (Rs.) *</label>
+                                <input type="number" id="payment-amount" class="form-control" min="0" step="any" required>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="payment-method">Payment Method *</label>
+                                <select id="payment-method" class="form-select" required>
+                                    <option value="Cash">Cash</option>
+                                    <option value="Card">Debit / Credit Card</option>
+                                    <option value="EasyPaisa">EasyPaisa</option>
+                                    <option value="JazzCash">JazzCash</option>
+                                    <option value="Online">Bank / Online Transfer</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="payment-status">Status</label>
+                        <select id="payment-status" class="form-select">
+                            <option value="Completed">Completed (Paid)</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Refunded">Refunded</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="payment-notes">Payment Notes</label>
+                        <input type="text" id="payment-notes" class="form-control" placeholder="Transaction ref or tip notes...">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="UI.closeModal('payment-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-success">✓ Record & Generate Receipt</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- RECEIPT MODAL (Printable) -->
+    <div class="modal-container" id="receipt-modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 class="modal-title">Payment Receipt</h3>
+                <button class="modal-close" onclick="UI.closeModal('receipt-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="receipt-paper" id="printable-receipt">
+                    <div class="receipt-header">
+                        <h3 id="receipt-shop-name">Elite Barber Lounge</h3>
+                        <p id="receipt-shop-tagline">Premium Haircuts & Grooming</p>
+                        <p id="receipt-shop-address">Commercial Boulevard, Phase 5, DHA</p>
+                        <p id="receipt-shop-phone">Tel: +92 300 1234567</p>
+                    </div>
+
+                    <div class="receipt-meta">
+                        <div class="receipt-meta-row">
+                            <span>Invoice:</span>
+                            <strong id="receipt-invoice-no">INV-2026-0001</strong>
+                        </div>
+                        <div class="receipt-meta-row">
+                            <span>Date:</span>
+                            <span id="receipt-date">22 Nov 2026</span>
+                        </div>
+                        <div class="receipt-meta-row">
+                            <span>Customer:</span>
+                            <strong id="receipt-customer-name">Usman Tariq</strong>
+                        </div>
+                        <div class="receipt-meta-row">
+                            <span>Phone:</span>
+                            <span id="receipt-customer-phone">+92 321 4455667</span>
+                        </div>
+                        <div class="receipt-meta-row">
+                            <span>Method:</span>
+                            <span id="receipt-payment-method">Cash</span>
+                        </div>
+                        <div class="receipt-meta-row">
+                            <span>Status:</span>
+                            <span id="receipt-status" class="badge badge-completed">Paid</span>
+                        </div>
+                    </div>
+
+                    <div class="receipt-items">
+                        <div class="receipt-item-row fw-bold border-bottom pb-1 mb-1">
+                            <span>Description</span>
+                            <span>Amount</span>
+                        </div>
+                        <div class="receipt-item-row">
+                            <span id="receipt-item-name">Classic Fade Haircut</span>
+                            <span id="receipt-item-amount">Rs. 800</span>
+                        </div>
+                    </div>
+
+                    <div class="receipt-total-section">
+                        <div class="receipt-item-row">
+                            <span>Subtotal:</span>
+                            <span id="receipt-subtotal">Rs. 800</span>
+                        </div>
+                        <div class="receipt-item-row">
+                            <span>Total Paid:</span>
+                            <span id="receipt-total" class="text-accent">Rs. 800</span>
+                        </div>
+                    </div>
+
+                    <div class="receipt-footer">
+                        <p>Thank you for choosing Elite Barber Lounge!</p>
+                        <p>Follow us on Instagram: @elitebarber</p>
+                        <p>www.elitebarber.com</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="UI.closeModal('receipt-modal')">Close</button>
+                <button type="button" class="btn btn-primary" id="btn-print-receipt">🖨️ Print Receipt</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SETTINGS & SUPABASE MODAL -->
+    <div class="modal-container" id="settings-modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-dialog modal-dialog-lg">
+            <div class="modal-header">
+                <h3 class="modal-title">Settings & Database Configuration</h3>
+                <button class="modal-close" onclick="UI.closeModal('settings-modal')">&times;</button>
+            </div>
+            <form id="settings-form">
+                <div class="modal-body">
+                    <!-- Supabase Credentials -->
+                    <div class="card mb-3 border-accent">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h4 class="card-title m-0">⚡ Supabase Database Connection</h4>
+                                <span class="badge badge-accent">Free Plan</span>
+                            </div>
+                            <p class="text-muted-small mb-3">
+                                Connect your online Supabase PostgreSQL database. Paste your Project URL and Anon Public Key below.
+                            </p>
+
+                            <div class="form-group">
+                                <label class="form-label" for="settings-supabase-url">Project URL</label>
+                                <input type="url" id="settings-supabase-url" class="form-control" placeholder="https://xyzcompany.supabase.co">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="settings-supabase-key">Anon / Public API Key</label>
+                                <input type="password" id="settings-supabase-key" class="form-control" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+                            </div>
+
+                            <div class="d-flex flex-wrap gap-2 mt-3">
+                                <button type="button" class="btn btn-outline-primary btn-sm" id="btn-test-supabase">
+                                    ⚡ Test Connection
+                                </button>
+                                <button type="button" class="btn btn-secondary btn-sm" id="btn-sync-to-supabase">
+                                    🚀 Seed / Upload Demo Data to Supabase
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Business Profile Details -->
+                    <h4 class="card-title mb-2">💈 Barbershop Profile & Receipts</h4>
+                    <div class="row">
+                        <div class="col-12 col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="settings-shop-name">Shop Name</label>
+                                <input type="text" id="settings-shop-name" class="form-control">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="settings-tagline">Tagline</label>
+                                <input type="text" id="settings-tagline" class="form-control">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="settings-currency">Currency Symbol</label>
+                                <input type="text" id="settings-currency" class="form-control" placeholder="Rs. or $">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-group">
+                                <label class="form-label" for="settings-phone">Contact Phone</label>
+                                <input type="text" id="settings-phone" class="form-control">
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label class="form-label" for="settings-address">Address</label>
+                                <input type="text" id="settings-address" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-2 border-top d-flex justify-content-between align-items-center">
+                        <button type="button" class="btn btn-outline-danger btn-sm" id="btn-reset-demo-data">
+                            ↺ Reset Local Demo Data
+                        </button>
+                        <small class="text-muted">Version 1.0.0</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="UI.closeModal('settings-modal')">Close</button>
+                    <button type="submit" class="btn btn-primary">Save Settings</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- CONFIRMATION MODAL -->
+    <div class="modal-container" id="confirm-modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 class="modal-title" id="confirm-modal-title">Confirm Action</h3>
+                <button class="modal-close" id="confirm-modal-cancel-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirm-modal-message">Are you sure you want to perform this action?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="UI.closeModal('confirm-modal')">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirm-modal-action-btn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/db.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/customers.js"></script>
+    <script src="js/services.js"></script>
+    <script src="js/appointments.js"></script>
+    <script src="js/payments.js"></script>
+    <script src="js/reports.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

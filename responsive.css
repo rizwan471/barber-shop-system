@@ -1,0 +1,182 @@
+/* ====================================================================
+   Barber Shop Management System - Responsive Stylesheet
+   Mobile, Tablet, and Desktop Adaptive Layouts
+   ==================================================================== */
+
+/* Overlay for Mobile Sidebar */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(5, 7, 12, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 95;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity var(--transition-base), visibility var(--transition-base);
+}
+
+.sidebar-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+/* TABLETS & SMALL DESKTOPS (< 992px) */
+@media (max-width: 991px) {
+    .sidebar {
+        transform: translateX(-100%);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .sidebar.mobile-open {
+        transform: translateX(0);
+    }
+
+    .main-wrapper {
+        margin-left: 0;
+    }
+
+    .menu-toggle-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .col-md-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    .col-lg-4 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+
+    .col-lg-8 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
+
+/* SMARTPHONES (< 768px) */
+@media (max-width: 767px) {
+    .top-header {
+        padding: 0 1rem;
+    }
+
+    .content-area {
+        padding: 1rem 0.85rem;
+    }
+
+    .view-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .view-header .btn {
+        width: 100%;
+    }
+
+    .search-bar-wrapper {
+        max-width: 100%;
+    }
+
+    .col-lg-4, .col-md-4 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    .kpi-grid {
+        grid-template-columns: 1fr;
+        gap: 0.85rem;
+    }
+
+    .kpi-card {
+        padding: 1rem 1.25rem;
+    }
+
+    .table th, .table td {
+        padding: 0.75rem 0.85rem;
+        font-size: 0.82rem;
+    }
+
+    .modal-dialog {
+        max-width: 95%;
+        margin: 0 auto;
+    }
+
+    .modal-body {
+        padding: 1rem;
+    }
+
+    .modal-footer {
+        flex-direction: column-reverse;
+    }
+
+    .modal-footer .btn {
+        width: 100%;
+    }
+
+    .customer-stats-grid {
+        gap: 0.25rem;
+    }
+
+    .stat-item .stat-value {
+        font-size: 0.85rem;
+    }
+
+    .card-actions {
+        flex-wrap: wrap;
+    }
+
+    .card-actions .btn {
+        flex: 1 1 auto;
+    }
+
+    .category-pills {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        padding-bottom: 0.5rem;
+    }
+
+    .category-pill {
+        white-space: nowrap;
+    }
+
+    .receipt-paper {
+        padding: 1.25rem 1rem;
+        max-width: 100%;
+    }
+
+    .toast-container {
+        left: 1rem;
+        right: 1rem;
+        top: 1rem;
+    }
+
+    .toast {
+        min-width: 100%;
+        max-width: 100%;
+    }
+}
+
+/* EXTRA SMALL MOBILES (< 480px) */
+@media (max-width: 480px) {
+    .btn {
+        font-size: 0.82rem;
+        padding: 0.55rem 0.85rem;
+    }
+
+    .brand-text h1 {
+        font-size: 0.95rem;
+    }
+
+    .kpi-value {
+        font-size: 1.45rem;
+    }
+}

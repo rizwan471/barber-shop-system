@@ -1,0 +1,99 @@
+/* ====================================================================
+   Barber Shop Management System - Print Stylesheet
+   Optimized for thermal receipts and A4 report printing
+   ==================================================================== */
+
+@media print {
+    /* Hide all application chrome and navigation */
+    .sidebar,
+    .top-header,
+    .modal-backdrop,
+    .modal-header,
+    .modal-footer,
+    .btn,
+    .toast-container,
+    .header-actions,
+    .search-bar-wrapper,
+    .category-pills,
+    .status-badge {
+        display: none !important;
+    }
+
+    body {
+        background: #fff !important;
+        color: #000 !important;
+        font-size: 12pt;
+    }
+
+    .app-container {
+        display: block !important;
+    }
+
+    .main-wrapper {
+        margin-left: 0 !important;
+        padding: 0 !important;
+    }
+
+    .content-area {
+        padding: 0 !important;
+    }
+
+    /* Print Modal as full page */
+    .modal-container.active {
+        position: static !important;
+        display: block !important;
+        padding: 0 !important;
+    }
+
+    .modal-dialog {
+        box-shadow: none !important;
+        border: none !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        background: #fff !important;
+    }
+
+    .modal-body {
+        padding: 0 !important;
+    }
+
+    /* Receipt Styling */
+    .receipt-paper {
+        box-shadow: none !important;
+        border: none !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        color: #000 !important;
+    }
+
+    .receipt-header h3 {
+        color: #000 !important;
+    }
+
+    /* Reports Print Format */
+    .card {
+        border: 1px solid #ddd !important;
+        background: #fff !important;
+        color: #000 !important;
+        box-shadow: none !important;
+    }
+
+    .card-title, .kpi-value, .view-title-group h2 {
+        color: #000 !important;
+    }
+
+    .table {
+        color: #000 !important;
+    }
+
+    .table th {
+        background-color: #f3f4f6 !important;
+        color: #000 !important;
+    }
+
+    .table td {
+        color: #000 !important;
+        border-bottom: 1px solid #eee !important;
+    }
+}
